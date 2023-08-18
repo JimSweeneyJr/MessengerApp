@@ -8,16 +8,27 @@
 import SwiftUI
 import Firebase
 
+class FirebaseManager: NSObject {
+    
+    let auth: Auth
+    
+    static let shared = FirebaseManager()
+    
+    override init() {
+        FirebaseApp.configure()
+        
+        self.auth = Auth.auth()
+        
+        super.init()
+    }
+    
+}
+
 struct ContentView: View {
     
     @State var isLoginMode = false
     @State var email = ""
     @State var password = ""
-    
-    init() {
-        FirebaseApp.configure()
-    }
-    
     
     var body: some View {
         NavigationView {
@@ -80,18 +91,23 @@ struct ContentView: View {
     private func handleAction() {
         if isLoginMode {
             print("Should log into Firebase with existing credentials")
+            loginUser()
         } else {
             createNewAccount()
             
         }
     }
     
+    private func loginUser() {
+        FirebaseManager.shared.auth.signIn(withEmail: email, password: password)
+    }
+    
     @State var errorMessage = ""
     
     private func createNewAccount() {
         Auth.auth().createUser(withEmail: email, password: password) {
-            result, err in
-            if let err = err {
+            result, error in
+            if let error = error {
                 print("Failed to create user")
                 self.errorMessage = "Failed to create user"
                 return
